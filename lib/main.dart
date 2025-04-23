@@ -56,6 +56,7 @@ class _MainScreenState extends State<MainScreen> {
           child: Stack(
             alignment: Alignment.center,
             children: [
+              // 사진
               Container(
                 width: double.maxFinite,
                 height: MediaQuery.of(context).size.width,
@@ -174,8 +175,64 @@ class _WriteScreenState extends State<WriteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Text('modify page')),
+      appBar: AppBar(
+        title: Text("NEDA", style: GoogleFonts.nanumPenScript(
+          textStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 24),
+        ),),
+        leading: GestureDetector(
+          child: Icon(Icons.arrow_back_ios_new, color: Colors.black,),
+          onTap: (){
+            Navigator.pop(context);
+          },
+        ),
+        elevation: 0,
+        backgroundColor: Colors.white,
+      ),
+      body: Container(
+        margin: EdgeInsets.all(8),
+        width: double.maxFinite,
+        height: MediaQuery.of(context).size.width,
+        child: GridView(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+          ),
+          physics: const NeverScrollableScrollPhysics(), // 스크롤 막기
+          children: [
+            GestureDetector(
+              child: Container(
+                color: const Color(0xffF4F4F4),
+                child: const Icon(Icons.image, color: Color(0xff868686),),
+              ),
+              onTap: (){},
+            ),
+            GestureDetector(
+              child: Container(
+                color: const Color(0xffF4F4F4),
+                child: const Icon(Icons.image, color: Color(0xff868686),),
+              ),
+              onTap: (){},
+            ),
+            GestureDetector(
+              child: Container(
+                color: const Color(0xffF4F4F4),
+                child: const Icon(Icons.image, color: Color(0xff868686),),
+              ),
+              onTap: (){},
+            ),
+            GestureDetector(
+              child: Container(
+                color: const Color(0xffF4F4F4),
+                child: const Icon(Icons.image, color: Color(0xff868686),),
+              ),
+              onTap: (){},
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
+
 
