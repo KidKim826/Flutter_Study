@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
+
+import 'package:image_picker/image_picker.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -172,6 +176,28 @@ class WriteScreen extends StatefulWidget {
 }
 
 class _WriteScreenState extends State<WriteScreen> {
+
+  // late 키워드 -> 초기화 필요.
+  late ValueNotifier<dynamic> selectedImgTopLeft;
+  late ValueNotifier<dynamic> selectedImgTopRight;
+  late ValueNotifier<dynamic> selectedImgBottomLeft;
+  late ValueNotifier<dynamic> selectedImgBottomRight;
+
+  // text field 변수
+  TextEditingController inputTitleController = TextEditingController();
+  final formKey = GlobalKey<FormState>(); //입력 필드 겁증용 key
+
+  // 초기화
+  @override
+  void initState() {
+    selectedImgBottomRight = ValueNotifier(null);
+    selectedImgBottomLeft = ValueNotifier(null);
+    selectedImgTopRight = ValueNotifier(null);
+    selectedImgTopLeft = ValueNotifier(null);
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -188,46 +214,72 @@ class _WriteScreenState extends State<WriteScreen> {
         elevation: 0,
         backgroundColor: Colors.white,
       ),
-      body: Container(
-        margin: EdgeInsets.all(8),
-        width: double.maxFinite,
-        height: MediaQuery.of(context).size.width,
-        child: GridView(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-          ),
-          physics: const NeverScrollableScrollPhysics(), // 스크롤 막기
+      body:
+
+      SingleChildScrollView(
+        child: Column(
+          // 왼쪽 정렬
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GestureDetector(
-              child: Container(
-                color: const Color(0xffF4F4F4),
-                child: const Icon(Icons.image, color: Color(0xff868686),),
+            // 이미지 선택 위젯
+            Container(
+              margin: EdgeInsets.all(8),
+              width: double.maxFinite,
+              height: MediaQuery.of(context).size.width,
+              child: GridView(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                physics: const NeverScrollableScrollPhysics(), // 스크롤 막기
+                children: [
+                  SelectImg(
+                    selectedImg: selectedImgTopLeft,
+                  ),
+                  SelectImg(
+                    selectedImg: selectedImgTopRight,
+                  ),
+                  SelectImg(
+                    selectedImg: selectedImgBottomLeft,
+                  ),
+                  SelectImg(
+                    selectedImg: selectedImgBottomRight,
+                  ),
+                ],
               ),
-              onTap: (){},
             ),
-            GestureDetector(
-              child: Container(
-                color: const Color(0xffF4F4F4),
-                child: const Icon(Icons.image, color: Color(0xff868686),),
+            // 텍스트 작성 필드
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 16,),
+              child: Text('한 줄 일기', style: GoogleFonts.nanumPenScript(
+                textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.w800,),
+              ),),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8,),
+              child: Form(
+                key: formKey,
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    hintText: '한 줄 일기를 작성해주세요 (최대 8글자)',
+                    hintStyle: GoogleFonts.nanumPenScript(fontSize: 16,),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Color(0xffE1E1E1),
+                      )
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.black,
+                      )
+                    )
+                  ),
+                  maxLength: 8, // 최대 글자수
+                  controller: inputTitleController,
+                ),
               ),
-              onTap: (){},
-            ),
-            GestureDetector(
-              child: Container(
-                color: const Color(0xffF4F4F4),
-                child: const Icon(Icons.image, color: Color(0xff868686),),
-              ),
-              onTap: (){},
-            ),
-            GestureDetector(
-              child: Container(
-                color: const Color(0xffF4F4F4),
-                child: const Icon(Icons.image, color: Color(0xff868686),),
-              ),
-              onTap: (){},
-            ),
+            )
           ],
         ),
       ),
@@ -235,4 +287,55 @@ class _WriteScreenState extends State<WriteScreen> {
   }
 }
 
+
+class SelectImg extends StatefulWidget {
+
+  final ValueNotifier<dynamic>? selectedImg; // 갤러리에서 새로 선택한 이미지;
+
+  const SelectImg({super.key, this.selectedImg,});
+
+  @override
+  State<SelectImg> createState() => _SelectImgState();
+}
+
+class _SelectImgState extends State<SelectImg> {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          color: const Color(0xffF4F4F4),
+        ),
+        child: // 3항 연산자 사용.
+        widget.selectedImg?.value == null ?
+          // 선택된 이미지가 없는 경우
+          const Icon(Icons.image, color: Color(0xff868686),)
+              :
+          // 선택된 이미지가 있는 경우
+          Container(
+            height: MediaQuery.of(context).size.width,
+            child : Image.file(widget.selectedImg!.value, fit: BoxFit.cover,)
+          )
+      ),
+      onTap: () => getGelleryImage(),
+    );
+  }
+
+  void getGelleryImage() async{
+    // 갤러리에서 이미지 가지고오는 함수
+
+    var image = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 10,);
+
+    if(image != null) { // 이미지가 선택 된 경우
+      widget.selectedImg?.value = File(image.path);
+
+      setState(() {
+
+      });
+
+      return;
+    }
+  }
+}
 
